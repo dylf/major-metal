@@ -1,0 +1,29 @@
+---
+export interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+	</head>
+	<body class="bg-black text-white">
+		<header class="w-screen bg-slate-700 p-1 mb-2">
+			<nav>
+				<ul class="flex text-xl text-white justify-center">
+					<li><a class="block mr-4 hover:bg-slate-500 p-3 rounded-xl" href="/">Home</a></li>
+					<li><a class="block mr-4 hover:bg-slate-500 p-3 rounded-xl" href="/react">React</a></li>
+				</ul>
+			</nav>
+		</header>
+		<slot />
+	</body>
+</html>

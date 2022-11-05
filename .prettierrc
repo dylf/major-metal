@@ -1,0 +1,10 @@
+{
+    "pluginSearchDirs": [
+        "./"
+    ],
+    "plugins": [
+        "prettier-plugin-astro"
+    ],
+    "singleQuote": true,
+    "semi": false
+}

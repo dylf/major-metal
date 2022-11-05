@@ -1,0 +1,15 @@
+---
+import Layout from '../layouts/Layout.astro'
+import App from '@/react/App'
+---
+
+<Layout title="Welcome to Astro.">
+  <main
+    class="flex justify-center flex-col align-items-center text-center mx-auto"
+  >
+    <h1 class="text-4xl">Word Game React</h1>
+    <section id="game" class="max-w-[50%] mx-auto mt-10">
+      <App client:only="react" />
+    </section>
+  </main>
+</Layout>
