@@ -1,4 +1,15 @@
 import React, { useEffect, useState } from 'react'
+import GameEndModal from './GameEndModal'
+
+const KEY_BACKSPACE = 'Backspace'
+const KEY_ENTER = 'Enter'
+const KEY_ESCAPE = 'Escape'
+
+enum Matches {
+  NO_MATCH = 0,
+  WRONG_POSITION = 1,
+  MATCH = 2,
+}
 
 const Key: React.FC<{
   children: string
@@ -26,54 +37,33 @@ const Key: React.FC<{
 }
 
 const Keyboard: React.FC<{
-  setGuess: (char: string) => void
-  backspace: () => void
-  submitGuess: () => void
+  handleKey: (char: string) => void
   guessedLetters: Map<string, Matches>
-}> = ({ setGuess, backspace, submitGuess, guessedLetters }) => {
+}> = ({ handleKey, guessedLetters }) => {
+  const keyboard = [
+    'qwertyuiop'.split(''),
+    'asdfghjkl'.split(''),
+    [KEY_ENTER, ...'zxcvbnm'.split(''), KEY_BACKSPACE],
+  ]
   return (
     <div className="justify-center align-center flex-col">
-      <div className="flex mb-2 justify-center">
-        {'qwertyuiop'.split('').map((char) => {
-          return (
-            <Key
-              key={char}
-              onClick={() => setGuess(char)}
-              guessState={guessedLetters.get(char) ?? null}
-            >
-              {char}
-            </Key>
-          )
-        })}
-      </div>
-      <div className="flex mb-2 justify-center">
-        {'asdfghjkl'.split('').map((char) => {
-          return (
-            <Key
-              key={char}
-              onClick={() => setGuess(char)}
-              guessState={guessedLetters.get(char) ?? null}
-            >
-              {char}
-            </Key>
-          )
-        })}
-      </div>
-      <div className="flex justify-center">
-        <Key onClick={() => submitGuess()}>enter</Key>
-        {'zxcvbnm'.split('').map((char) => {
-          return (
-            <Key
-              key={char}
-              onClick={() => setGuess(char)}
-              guessState={guessedLetters.get(char) ?? null}
-            >
-              {char}
-            </Key>
-          )
-        })}
-        <Key onClick={() => backspace()}>⬅️</Key>
-      </div>
+      {keyboard.map((row, i) => {
+        return (
+          <div className="flex mb-2 justify-center">
+            {row.map((key, i) => {
+              return (
+                <Key
+                  key={key}
+                  onClick={() => handleKey(key)}
+                  guessState={guessedLetters.get(key) ?? null}
+                >
+                  {key}
+                </Key>
+              )
+            })}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -94,7 +84,7 @@ const Tile: React.FC<{ children: string; match: Matches | null }> = ({
     <div
       className={`flex place-content-center w-16 h-16 ${bg} border-2 uppercase text-5xl font-bold items-center`}
     >
-      {children}
+      <span style={{ textShadow: '2px 2px 4px black' }}>{children}</span>
     </div>
   )
 }
@@ -115,87 +105,18 @@ const Row: React.FC<{ letters: string; matches: Matches[] | null }> = ({
   )
 }
 
-enum Matches {
-  NO_MATCH = 0,
-  WRONG_POSITION = 1,
-  MATCH = 2,
-}
-
-const GameEndModal: React.FC<{
-  isVisible: boolean
-  isWinner: boolean
-  onClose: () => void
-}> = ({ isVisible, onClose }) => {
-  return (
-    <div
-      id="popup-modal"
-      tabIndex={-1}
-      className={`${
-        !isVisible ? 'hidden' : null
-      } overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 md:inset-0 h-modal md:h-full`}
-    >
-      <div className="relative p-4 w-full max-w-md h-full mx-auto top-[25%]">
-        <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
-          <button
-            className="absolute top-3 right-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-800 dark:hover:text-white"
-            onClick={onClose}
-          >
-            <svg
-              aria-hidden="true"
-              className="w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              ></path>
-            </svg>
-            <span className="sr-only">Close modal</span>
-          </button>
-          <div className="p-6 text-center">
-            <svg
-              aria-hidden="true"
-              className="mx-auto mb-4 w-14 h-14 text-gray-400 dark:text-gray-200"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              ></path>
-            </svg>
-            <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-              Game Over
-            </h3>
-            <button
-              onClick={onClose}
-              className="text-white bg-green-600 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center mr-2"
-            >
-              Reset
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+const getWord = () => {
+  return 'FUNKY'.toLowerCase()
 }
 
 function App() {
-  const word = 'FUNKY'.toLowerCase()
-  const [guessHistory, setGuessHistory] = useState<
-    Array<{ matches: Matches[]; guess: string }>
-  >([])
+  const word = getWord()
+  const [isWinner, setIsWinner] = useState(false)
+  const [gameHistory, setGameHistory] = useState({
+    guessedLetters: new Map<string, Matches>(),
+    guesses: new Array<{ matches: Matches[]; guess: string }>(),
+  })
   const [currentGuess, setCurrentGuess] = useState('')
-  const [guessedLetters, setGuessedLetters] = useState(
-    new Map<string, Matches>()
-  )
   const [modalOpen, setModalOpen] = useState(false)
 
   const checkLetters = (guess: string) => {
@@ -219,58 +140,61 @@ function App() {
     })
   }
 
-  const setGuessValidated = (char: string) => {
-    console.log('sgv', currentGuess, char)
-    setCurrentGuess((guess) => (guess + char).slice(0, 5))
+  const handleKey = (key: string) => {
+    if (/^[a-z]$/i.test(key)) {
+      setCurrentGuess((guess) => (guess + key).slice(0, 5))
+    }
+
+    if (KEY_BACKSPACE === key) {
+      setCurrentGuess((guess) => guess.slice(0, -1))
+    }
+
+    if (KEY_ENTER === key) {
+      submitGuess()
+    }
   }
 
-  const backspace = () => {
-    setCurrentGuess((guess) => guess.slice(0, -1))
-  }
-
-  const totalGuesses = guessHistory.length
+  const totalGuesses = gameHistory.guesses.length
 
   const submitGuess = () => {
-    console.log('submitGuess', currentGuess)
-    if (currentGuess.length == 5) {
-      const result = checkLetters(currentGuess)
-
-      setGuessedLetters((guessedLetters) => {
-        currentGuess.split('').forEach((char, i) => {
-          guessedLetters.set(char, result[i])
-        })
-        return guessedLetters
-      })
-      setGuessedLetters(guessedLetters)
-      setGuessHistory((guessHistory) => {
-        return [...guessHistory, { guess: currentGuess, matches: result }]
-      })
-      // We are on the final guess
-      if (totalGuesses == 5) {
-        setModalOpen(true)
-      }
-      if (result.every((r) => r === Matches.MATCH)) {
-        setModalOpen(true)
-      }
-      setCurrentGuess('')
+    if (currentGuess.length != 5) {
+      return
     }
+    const result = checkLetters(currentGuess)
+
+    setGameHistory((prevGuessHistory) => {
+      return {
+        guessedLetters: currentGuess.split('').reduceRight((map, char, i) => {
+          if (map.get(char) !== Matches.MATCH) {
+            map.set(char, result[i])
+          }
+          return map
+        }, prevGuessHistory.guessedLetters),
+        guesses: [
+          ...prevGuessHistory.guesses,
+          { guess: currentGuess, matches: result },
+        ],
+      }
+    })
+
+    // We are on the final guess
+    if (totalGuesses == 5) {
+      setModalOpen(true)
+      setIsWinner(false)
+    }
+    if (result.every((r) => r === Matches.MATCH)) {
+      setModalOpen(true)
+      setIsWinner(true)
+    }
+    setCurrentGuess('')
   }
 
   const keyPress = (e: KeyboardEvent) => {
-    if (/^[a-z]$/i.test(e.key)) {
-      return setGuessValidated(e.key.toLowerCase())
+    if (modalOpen && (e.key === KEY_ENTER || e.key === KEY_ESCAPE)) {
+      return resetGame()
     }
-    if (modalOpen) {
-      if (e.key === 'Escape' || e.key === 'Enter') {
-        return resetGame()
-      }
-    }
-    if (e.key == 'Enter') {
-      return submitGuess()
-    }
-    if (e.key === 'Backspace') {
-      return backspace()
-    }
+
+    handleKey(e.key)
   }
 
   useEffect(() => {
@@ -284,8 +208,10 @@ function App() {
   const resetGame = () => {
     setModalOpen(false)
     setCurrentGuess('')
-    setGuessHistory([])
-    setGuessedLetters(new Map())
+    setGameHistory({
+      guessedLetters: new Map<string, Matches>(),
+      guesses: new Array<{ matches: Matches[]; guess: string }>(),
+    })
   }
 
   const rows = []
@@ -296,8 +222,8 @@ function App() {
       letters = currentGuess
     }
     if (i < totalGuesses) {
-      letters = guessHistory[i].guess
-      matches = guessHistory[i].matches
+      letters = gameHistory.guesses[i].guess
+      matches = gameHistory.guesses[i].matches
     }
     rows.push(<Row letters={letters} matches={matches} />)
   }
@@ -308,12 +234,14 @@ function App() {
         {rows}
       </div>
       <Keyboard
-        guessedLetters={guessedLetters}
-        setGuess={setGuessValidated}
-        submitGuess={submitGuess}
-        backspace={backspace}
+        guessedLetters={gameHistory.guessedLetters}
+        handleKey={handleKey}
       />
-      <GameEndModal isVisible={modalOpen} onClose={resetGame} isWinner />
+      <GameEndModal
+        isVisible={modalOpen}
+        onClose={resetGame}
+        isWinner={isWinner}
+      />
     </div>
   )
 }
