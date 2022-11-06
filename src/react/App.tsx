@@ -106,7 +106,28 @@ const Row: React.FC<{ letters: string; matches: Matches[] | null }> = ({
 }
 
 const getWord = () => {
-  return 'FUNKY'.toLowerCase()
+  return 'OOPSY'.toLowerCase()
+}
+
+const findMatchingChars = (guess: string, word: string) => {
+  const charsInWord = word.split('')
+  const charsLeft = word.split('')
+  const matches = new Array<Matches>(5).fill(Matches.NO_MATCH)
+  charsInWord.forEach((char, i) => {
+    if (guess[i] === char) {
+      matches[i] = Matches.MATCH
+      charsLeft[i] = '_'
+    }
+  })
+
+  guess.split('').forEach((char, i) => {
+    if (charsLeft.includes(char)) {
+      matches[i] = Matches.WRONG_POSITION
+      charsLeft[charsLeft.indexOf(char)] = '_'
+    }
+  })
+
+  return matches
 }
 
 function App() {
@@ -119,25 +140,8 @@ function App() {
   const [currentGuess, setCurrentGuess] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
 
-  const checkLetters = (guess: string) => {
-    const guessedLetters = guess.split('')
-    const hintedLetters = []
-    return guess.split('').map((char, index) => {
-      const position = word.indexOf(char)
-      hintedLetters.push(char)
-      if (position == index) {
-        return Matches.MATCH
-      }
-      if (position >= 0) {
-        const guessedCount = guessedLetters.filter((l) => l == char).length
-        const wordCount = word.split('').filter((l) => l == char).length
-
-        return guessedCount > wordCount
-          ? Matches.NO_MATCH
-          : Matches.WRONG_POSITION
-      }
-      return Matches.NO_MATCH
-    })
+  const checkGuess = (guess: string) => {
+    return findMatchingChars(guess, word)
   }
 
   const handleKey = (key: string) => {
@@ -160,7 +164,7 @@ function App() {
     if (currentGuess.length != 5) {
       return
     }
-    const result = checkLetters(currentGuess)
+    const result = checkGuess(currentGuess)
 
     setGameHistory((prevGuessHistory) => {
       return {
@@ -190,8 +194,11 @@ function App() {
   }
 
   const keyPress = (e: KeyboardEvent) => {
-    if (modalOpen && (e.key === KEY_ENTER || e.key === KEY_ESCAPE)) {
-      return resetGame()
+    if (modalOpen) {
+      if (e.key === KEY_ENTER || e.key === KEY_ESCAPE) {
+        return resetGame()
+      }
+      return
     }
 
     handleKey(e.key)
